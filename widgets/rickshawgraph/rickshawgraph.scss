@@ -70,7 +70,7 @@ $tick-color:        rgba(0, 0, 0, 0.4);
   .rickshaw_legend {
     position: absolute;
     left: 0px;
-    bottom: 0px;
+    top: 5px;
     white-space: nowrap;
     overflow-x: hidden;
     font-size: 15px;
@@ -103,7 +103,7 @@ $tick-color:        rgba(0, 0, 0, 0.4);
 
   .updated-at {
     color: rgba(0, 0, 0, 0.3);
-    top: 10px;
+    bottom: 5px;
   }
 
 }
