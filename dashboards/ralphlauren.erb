@@ -1,0 +1,27 @@
+<% content_for :title do %>Ralph Lauren<% end %>
+<div class="gridster">
+  <ul>
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="clicks" data-view="Number" data-title="Total clicks"></div>
+    </li>
+    <li data-row="1" data-col="2" data-sizex="1" data-sizey="1">
+      <div data-id="impressions" data-view="Number" data-title="Total impressions"
+      style="background-color:#ff9618"></div>
+    </li>
+    <li data-row="1" data-col="3" data-sizex="1" data-sizey="1">
+      <div data-id="ctr" data-view="Number" data-title="Average CTR"></div>
+    </li>
+    <li data-row="1" data-col="4" data-sizex="1" data-sizey="1">
+      <div data-id="position" data-view="Number" data-title="Average position"
+      style="background-color:#ff9618"></div>
+    </li>
+
+    <li data-row="2" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="devices" data-view="Pie" data-title="Devices"></div>
+    </li>
+    <li data-row="2" data-col="2" data-sizex="3" data-sizey="1">
+      <div data-id="ci_line" data-view="Rickshawgraph" data-title="Search Query Performance"
+      data-renderer="line" data-legend="true" data-colors="#91cf60:#67a9cf"></div>
+    </li>
+  </ul>
+</div>
