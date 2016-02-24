@@ -13,6 +13,12 @@ SCHEDULER.every '1d', :first_in => 0 do |job|
   impressions_series = [] # List of impressions data points for the Clicks/Impressions Line Graph
   ci_line = [] # Clicks/Impressions line
 
+  treemap_hash = Hash.new # Clicks/CTR per keyword for treemap
+  treemap_values = {} # Treemap data structure
+  treemap_children =[] # Keywords/clicks/CTR for treemap
+
+  wordcloud_values = [] # Wordcloud data structure
+
   total_clicks = 0 # Total number of clicks
   total_impressions = 0 # Total number of impressions
 
@@ -24,6 +30,48 @@ SCHEDULER.every '1d', :first_in => 0 do |job|
 
   # DB connection
   conn = PG.connect( host: '172.16.190.19', port: 5439, dbname: 'gsc', user: 'gscuser', password: 'Gsc@BT2015')
+
+  # Retrieving the 'queries' table (once)
+  conn.exec("SELECT * FROM www_ralphlauren_com.queries ORDER BY clicks DESC") do |result|
+    result.each do |row|
+      date = DateTime.parse(row.values_at('date')[0]).to_time.to_i
+      query = row.values_at('query')[0]
+      country = row.values_at('country')[0]
+      device = row.values_at('device')[0]
+      search_type = row.values_at('search_type')[0]
+      clicks = row.values_at('clicks')[0].to_i
+      impressions = row.values_at('impressions')[0].to_i
+      ctr = row.values_at('ctr')[0].to_f
+      position = row.values_at('position')[0].to_f
+
+      # Computing the total clicks/impressions per day
+      if treemap_hash.has_key?(query)
+        treemap_hash[query][0] = treemap_hash[query][0] + clicks
+        treemap_hash[query][1] = treemap_hash[query][1] + impressions
+      elsif treemap_hash.keys.length < 100
+        treemap_hash[query] = [clicks, impressions]
+      end
+
+      # Incrementing the average position
+      average_position += position
+      position_count += 1
+    end
+
+    # Setting up the treemap input data
+    treemap_hash.each do |key, value|
+      treemap_children.push({ keyword: key, clicks: value[0], ctr: value[0].to_f/value[1].to_f })
+      wordcloud_values.push({ text: key, size: value[0] })
+    end
+
+    # Setting up the treemap input data
+    treemap_values = {
+      name: "keywords",
+      children: treemap_children
+    }
+
+    # Averaging the position
+    average_position = (average_position / position_count).round(2)
+  end
 
   # Retrieving the 'pages' table (once)
   conn.exec("SELECT * FROM www_ralphlauren_com.pages") do |result|
@@ -63,9 +111,6 @@ SCHEDULER.every '1d', :first_in => 0 do |job|
       # Incrementing the average CTR
       average_ctr += ctr
       ctr_count += 1
-      # Incrementing the average position
-      average_position += position
-      position_count += 1
     end
     # Setting up the total devices counts
     devices_counts = [
@@ -92,8 +137,6 @@ SCHEDULER.every '1d', :first_in => 0 do |job|
 
     # Averaging the CTR
     average_ctr = (average_ctr / ctr_count).round(2)
-    # Averaging the position
-    average_position = (average_position / position_count).round(2)
   end
 
   # Pushing values to dashboard
@@ -103,4 +146,6 @@ SCHEDULER.every '1d', :first_in => 0 do |job|
   send_event('position', { current: average_position })
   send_event('devices', { value: devices_counts })
   send_event('ci_line', series: ci_line)
+  send_event('keyword_treemap', { value: treemap_values })
+  send_event('keyword_cloud', { value: wordcloud_values })
 end

@@ -1,17 +1,28 @@
 class Dashing.Pie extends Dashing.Widget
   @accessor 'value', Dashing.AnimatedValue
 
-  onData: (data) ->
-    width = 220
-    height = 220
-    radius = 110
-    color = d3.scale.category20()
+  pie_data = null
+  width = 220
+  height = 220
+  radius = 110
+  color = d3.scale.category20()
 
-    $(@node).find('.pie_chart svg').remove();
-    $(@node).find('.legend ul').remove();
+  ready: ->
+    render()
+
+  onData: (data) ->
+    pie_data = data
+    render()
+
+  render = ->
+    pie_svg = document.getElementById("pie_svg")
+    pie_legend = document.getElementById("pie_legend")
+    if pie_svg != null then pie_svg.parentNode.removeChild(pie_svg)
+    if pie_legend != null then pie_legend.parentNode.removeChild(pie_legend)
 
     chart = d3.select('.pie_chart').append("svg:svg")
-        .data([data.value])
+        .data([pie_data.value])
+        .attr("id", "pie_svg")
         .attr("width", width)
         .attr("height", height)
         .append("svg:g")
@@ -32,7 +43,8 @@ class Dashing.Pie extends Dashing.Widget
 
     legend = d3.select(".legend")
       .append("ul")
-    legend.selectAll("ul").data(data.value)
+      .attr("id", "pie_legend")
+    legend.selectAll("ul").data(pie_data.value)
       .enter()
       .append("li")
       .each((d, i) ->
